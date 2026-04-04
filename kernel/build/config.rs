@@ -124,6 +124,14 @@ struct ConfigPanic {
 	callstack_depth: usize,
 }
 
+/// Modules section of the configuration file.
+#[derive(Deserialize, Default)]
+struct ConfigModules {
+	/// Names of modules to compile and embed directly into the kernel binary.
+	#[serde(default)]
+	builtin: Vec<String>,
+}
+
 /// The compilation configuration.
 #[derive(Deserialize)]
 pub struct Config {
@@ -133,6 +141,9 @@ pub struct Config {
 	memory: ConfigMemory,
 	/// Kernel panic section
 	panic: ConfigPanic,
+	/// Modules section
+	#[serde(default)]
+	modules: ConfigModules,
 }
 
 impl Config {
@@ -164,5 +175,10 @@ impl Config {
 
 		generate_const_file!(self.memory.writeback_timeout);
 		generate_const_file!(self.panic.callstack_depth);
+	}
+
+	/// Returns the list of built-in module names.
+	pub fn builtin_modules(&self) -> &[String] {
+		&self.modules.builtin
 	}
 }

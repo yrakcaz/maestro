@@ -78,6 +78,32 @@ jobs:
       - name: Check Multiboot2
         working-directory: kernel
         run: grub-file --is-x86-multiboot2 target/${{ matrix.arch }}/${{ matrix.profile.dir }}/maestro
+  builtin_module:
+    name: builtin_module (${{ matrix.arch }}, ${{ matrix.profile.dir }})
+    runs-on: [self-hosted, linux]
+    needs: clippy
+    strategy:
+      fail-fast: false
+      matrix:
+        arch: ["x86", "x86_64"]
+        profile:
+          - name: "dev"
+            dir: "debug"
+          - name: "release"
+            dir: "release"
+    steps:
+      - name: Configure
+        working-directory: kernel
+        run: |
+          cp default.build-config.toml build-config.toml
+          sed -i 's/builtin = \[\]/builtin = ["ps2", "e1000"]/' build-config.toml
+      - name: Build
+        run: cargo xtask build-kernel --target arch/${{ matrix.arch }}/${{ matrix.arch }}.json --profile ${{ matrix.profile.name }}
+      - name: Verify
+        working-directory: kernel
+        run: |
+          grep -ql 'libps2\.so'   target/${{ matrix.arch }}/${{ matrix.profile.dir }}/build/maestro-*/out/builtin_modules.rs
+          grep -ql 'libe1000\.so' target/${{ matrix.arch }}/${{ matrix.profile.dir }}/build/maestro-*/out/builtin_modules.rs
   miri:
     runs-on: [self-hosted, linux]
     needs: build

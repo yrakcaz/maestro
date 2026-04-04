@@ -21,6 +21,7 @@
 
 pub mod compile;
 pub mod config;
+pub mod module;
 pub mod target;
 pub mod util;
 
@@ -63,6 +64,11 @@ impl Env {
 	pub fn is_debug(&self) -> bool {
 		self.profile == "debug"
 	}
+
+	/// Tells whether compiling in release mode.
+	pub fn is_release(&self) -> bool {
+		self.profile == "release"
+	}
 }
 
 fn main() {
@@ -84,6 +90,11 @@ fn main() {
 	});
 	compile::compile_vdso(&env, &target).unwrap_or_else(|e| {
 		eprintln!("vDSO compilation failed: {e}");
+		exit(1);
+	});
+	// Embed built-in modules
+	module::embed_builtin_modules(&env, &config).unwrap_or_else(|e| {
+		eprintln!("Built-in module embedding failed: {e}");
 		exit(1);
 	});
 	// Add the linker script

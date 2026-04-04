@@ -32,3 +32,13 @@ writeback_timeout = 100
 [panic]
 # The maximum depth of the callstack to print on panic.
 callstack_depth = 16
+
+[modules]
+# List of modules to compile and embed directly into the kernel binary.
+# These modules are loaded automatically at boot without needing files on the filesystem.
+# Example: builtin = ["ps2", "e1000"]
+#
+# Note: use `cargo xtask build-kernel` from the repo root; it handles the two-pass build
+# required the first time (when libkernel.rlib does not yet exist).
+# Alternatively, running `cargo build` twice from the kernel/ directory also works.
+builtin = []
